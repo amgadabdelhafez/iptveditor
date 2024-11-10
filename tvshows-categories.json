@@ -1,0 +1,545 @@
+{
+  "items": [
+    {
+      "id": 265,
+      "position": 265,
+      "name": "SP Actualmente Mostrando",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 266,
+      "position": 266,
+      "name": "يعرض حاليا عربي",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 267,
+      "position": 267,
+      "name": "مسلسلات 2024",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 268,
+      "position": 268,
+      "name": "رمضان مصرى2024",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 269,
+      "position": 269,
+      "name": "رمضان شامي2024",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 270,
+      "position": 270,
+      "name": "رمضان خليجي2024",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 271,
+      "position": 271,
+      "name": "رمضان المغرب العربي2024",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 272,
+      "position": 272,
+      "name": "برامج رمضان2024",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 273,
+      "position": 273,
+      "name": "رمضان اطفال2024",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 274,
+      "position": 274,
+      "name": "يعرض حاليا تركى",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 275,
+      "position": 275,
+      "name": "يعرض حاليا اجنبي",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 276,
+      "position": 276,
+      "name": "كوميدي",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 277,
+      "position": 277,
+      "name": "سلاسل افلام",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 278,
+      "position": 278,
+      "name": "NETFLIX",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 279,
+      "position": 279,
+      "name": "EN Action",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 280,
+      "position": 280,
+      "name": "EN Horror",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 281,
+      "position": 281,
+      "name": "EN Comedy",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 282,
+      "position": 282,
+      "name": "EN Sci-Fi & Fantasy",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 283,
+      "position": 283,
+      "name": "EN Mystery Thriller",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 284,
+      "position": 284,
+      "name": "EN drama & romance",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 285,
+      "position": 285,
+      "name": "تركى مدبلج",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 286,
+      "position": 286,
+      "name": "تركى مترجم ",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 287,
+      "position": 287,
+      "name": "مسلسلات هندية",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 288,
+      "position": 288,
+      "name": "مسلسلات أسيوية",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 289,
+      "position": 289,
+      "name": "2021-22-23",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 290,
+      "position": 290,
+      "name": "رمضان مصرى 2023",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 291,
+      "position": 291,
+      "name": "رمضان 2022",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 292,
+      "position": 292,
+      "name": "رمضان 2021",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 293,
+      "position": 293,
+      "name": "رمضان 2020",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 294,
+      "position": 294,
+      "name": "رمضان 2019",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 295,
+      "position": 295,
+      "name": "نصيبي وقسمتك",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 296,
+      "position": 296,
+      "name": "إلا أنا",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 297,
+      "position": 297,
+      "name": "زي القمر",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 298,
+      "position": 298,
+      "name": "ورا كل باب",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 299,
+      "position": 299,
+      "name": "مسلسلات مصريه",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 300,
+      "position": 300,
+      "name": "ماجيك زمان",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 301,
+      "position": 301,
+      "name": "وثائقى",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 302,
+      "position": 302,
+      "name": "مي عز الدين",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 303,
+      "position": 303,
+      "name": "محمد رمضان",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 304,
+      "position": 304,
+      "name": "مصطفى شعبان",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 305,
+      "position": 305,
+      "name": "محمد صبحى",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 306,
+      "position": 306,
+      "name": "محمود عبد العزيز",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 307,
+      "position": 307,
+      "name": "احمد عبد العزيز",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 308,
+      "position": 308,
+      "name": "عادل امام",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 309,
+      "position": 309,
+      "name": "نور الشريف",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 310,
+      "position": 310,
+      "name": "يحيي الفخرانى",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 311,
+      "position": 311,
+      "name": "يسرا",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 312,
+      "position": 312,
+      "name": "مسلسلات إذاعية",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 313,
+      "position": 313,
+      "name": "مسلسلات شامى",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 314,
+      "position": 314,
+      "name": "مسلسلات عراقيه",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 315,
+      "position": 315,
+      "name": "مسلسلات خليجى ",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 316,
+      "position": 316,
+      "name": "المغرب العربي",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 317,
+      "position": 317,
+      "name": "مسلسلات المانيه",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 318,
+      "position": 318,
+      "name": "اسلاميات",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 319,
+      "position": 319,
+      "name": "طقوس مسيحيه",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 320,
+      "position": 320,
+      "name": "برامج",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 321,
+      "position": 321,
+      "name": "اطفال",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 322,
+      "position": 322,
+      "name": "Anime",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 323,
+      "position": 323,
+      "name": "Pokemon",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    },
+    {
+      "id": 324,
+      "position": 324,
+      "name": "Course",
+      "hidden": false,
+      "is_deleted": false,
+      "createdAt": 1731180732,
+      "updatedAt": 1731180732
+    }
+  ],
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NDAxMTcsIm1sIjoxLCJtZSI6MywibWMiOjMsIm1zIjoxMjAwMDAsIm1lcCI6MzAwMDAwLCJlIjoxNzMxMzY5NjAwMDAwLCJsaWQiOiI1MjM1ODA2MjY4NTI1NzUzNjY2IiwiaWF0IjoxNzMxMTg3NDE5LCJleHAiOjE3MzM3Nzk0MTl9.QMBIB3mnxytynrmAkxK16p2QlsZgvCAl6gtdvTngKyA"
+}
