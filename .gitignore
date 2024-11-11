@@ -47,3 +47,4 @@ cache.db-journal
 
 # Sample responses
 samples/
+not_found_shows.json
