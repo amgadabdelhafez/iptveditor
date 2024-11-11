@@ -2,14 +2,89 @@ import json
 import logging
 import os
 from typing import Dict, Any
+from logging.handlers import MemoryHandler
+
+class MinimalFormatter(logging.Formatter):
+    """Custom formatter that only shows the message for INFO level"""
+    def format(self, record):
+        if record.levelno == logging.INFO:
+            return record.getMessage()
+        return super().format(record)
+
+class SummaryHandler(logging.Handler):
+    def __init__(self):
+        super().__init__()
+        self.shows_processed = 0
+        self.shows_failed = 0
+        self.current_show = None
+    
+    def emit(self, record):
+        if "Processing shows" in record.msg:
+            return  # Skip batch processing messages in summary
+        if record.levelno == logging.INFO:
+            if "✗" in record.msg:
+                self.shows_processed += 1
+                self.shows_failed += 1
+            elif "✓" in record.msg:
+                self.shows_processed += 1
+    
+    def get_summary(self):
+        if self.shows_processed == 0:
+            return None
+            
+        success_count = self.shows_processed - self.shows_failed
+        success_rate = (success_count / self.shows_processed * 100) if self.shows_processed > 0 else 0
+        
+        # Create visual bar for success rate
+        bar_length = 20
+        filled_length = int(bar_length * success_rate / 100)
+        bar = '█' * filled_length + '░' * (bar_length - filled_length)
+        
+        return f"""
+╔══════════════ Processing Summary ══════════════╗
+║                                               ║
+║  Total Processed: {self.shows_processed:4d}                        ║
+║  ✓ Successful:    {success_count:4d}                        ║
+║  ✗ Failed:        {self.shows_failed:4d}                        ║
+║                                               ║
+║  Success Rate: {success_rate:6.1f}%                        ║
+║  [{bar}] {success_rate:5.1f}%  ║
+║                                               ║
+╚═══════════════════════════════════════════════╝"""
 
 def setup_logging() -> logging.Logger:
-    """Configure and return logger"""
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s'
-    )
-    return logging.getLogger(__name__)
+    """Configure and return logger with file and console handlers"""
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    
+    # Clear any existing handlers
+    logger.handlers.clear()
+    
+    # Create logs directory if it doesn't exist
+    os.makedirs('logs', exist_ok=True)
+    
+    # File handler for detailed logs
+    file_handler = logging.FileHandler('logs/detailed.log')
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    ))
+    
+    # Console handler for minimal progress only
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(MinimalFormatter())
+    
+    # Summary handler
+    summary_handler = SummaryHandler()
+    summary_handler.setLevel(logging.INFO)
+    
+    # Add all handlers
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    logger.addHandler(summary_handler)
+    
+    return logger
 
 def load_json_file(filepath: str) -> Dict[str, Any]:
     """Load and parse JSON file"""
