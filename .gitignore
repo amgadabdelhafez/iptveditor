@@ -49,3 +49,7 @@ cache.db-journal
 samples/
 not_found_shows.json
 not_found_shows.json
+.DS_Store
+tvshows-categories.json
+tvshows-shows.json
+not_found_shows.json

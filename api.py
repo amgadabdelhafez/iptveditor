@@ -4,7 +4,7 @@ import os
 from typing import Dict, Any, List, Optional
 from utils import detect_language, arabic_to_english
 from database import cache_manager
-from config import HTTP_HEADERS, IPTVEDITOR_TOKEN, IPTVEDITOR_BASE_URL, TMDB_BASE_URL
+from config import HTTP_HEADERS, IPTVEDITOR_TOKEN, IPTVEDITOR_BASE_URL, TMDB_BASE_URL, IPTVEDITOR_PLAYLIST_ID
 
 class TMDBApi:
     def __init__(self):
@@ -114,20 +114,50 @@ class IPTVEditorApi:
 
     def get_categories(self) -> List[Dict]:
         """Get all categories"""
-        response = requests.get(
-            f"{self.base_url}/category/get-data",
+        url = f"{self.base_url}/category/series/get-data"
+        payload = {
+            "playlist": IPTVEDITOR_PLAYLIST_ID,
+            "token": IPTVEDITOR_TOKEN
+        }
+        
+        self.logger.debug(f"Making POST request to: {url}")
+        self.logger.debug(f"Headers: {self.headers}")
+        self.logger.debug(f"Payload: {payload}")
+        
+        response = requests.post(
+            url,
             headers=self.headers,
-            json={'token': IPTVEDITOR_TOKEN}
+            json=payload
         )
+        
+        self.logger.debug(f"Response status code: {response.status_code}")
+        self.logger.debug(f"Response headers: {response.headers}")
+        self.logger.debug(f"Response content: {response.text}")
+        
+        response.raise_for_status()
         return response.json()['items']
 
     def get_shows(self) -> List[Dict]:
         """Get all shows"""
-        response = requests.get(
-            f"{self.base_url}/stream/series/get-data",
+        url = f"{self.base_url}/stream/series/get-data"
+        # Format payload as string exactly as provided
+        payload = f'{{"playlist":"{IPTVEDITOR_PLAYLIST_ID}","token":"{IPTVEDITOR_TOKEN}"}}'
+        
+        self.logger.debug(f"Making POST request to: {url}")
+        self.logger.debug(f"Headers: {self.headers}")
+        self.logger.debug(f"Payload: {payload}")
+        
+        response = requests.post(
+            url,
             headers=self.headers,
-            json={'token': IPTVEDITOR_TOKEN}
+            data=payload  # Use data instead of json for string payload
         )
+        
+        self.logger.debug(f"Response status code: {response.status_code}")
+        self.logger.debug(f"Response headers: {response.headers}")
+        self.logger.debug(f"Response content: {response.text}")
+        
+        response.raise_for_status()
         return response.json()['items']
 
     def get_episodes(self, show_id: int) -> List[Dict]:
@@ -143,17 +173,13 @@ class IPTVEditorApi:
         
         self.logger.debug(f"No cache found, fetching episodes from API for show ID: {show_id}")
         
-        # Get episodes from API
-        payload = {
-            'seriesId': str(show_id),
-            'url': None,
-            'token': IPTVEDITOR_TOKEN
-        }
+        # Format payload as string
+        payload = f'{{"seriesId":"{str(show_id)}","url":null,"playlist":"{IPTVEDITOR_PLAYLIST_ID}","token":"{IPTVEDITOR_TOKEN}"}}'
         
         response = requests.post(
             f"{self.base_url}/episode/get-data",
             headers=self.headers,
-            json=payload
+            data=payload  # Use data instead of json
         )
         result = response.json()['items']
         
@@ -174,29 +200,20 @@ class IPTVEditorApi:
         
         self.logger.debug(f"No cache found, updating show via API: {show_id}")
         
-        # Update show via API with the correct payload structure
-        payload = {
-            'items': [{
-                'id': show_id,
-                'tmdb': tmdb_id,
-                'youtube_trailer': '',
-                'category': category_id
-            }],
-            'checkSaved': False,
-            'token': IPTVEDITOR_TOKEN
-        }
+        # Format payload as string
+        payload = f'{{"items":[{{"id":{show_id},"tmdb":{tmdb_id},"youtube_trailer":"","category":{category_id}}}],"checkSaved":false,"playlist":"{IPTVEDITOR_PLAYLIST_ID}","token":"{IPTVEDITOR_TOKEN}"}}'
         
         try:
             response = requests.post(
                 f"{self.base_url}/stream/series/save",
                 headers=self.headers,
-                json=payload  # Use json parameter to properly serialize
+                data=payload  # Use data instead of json
             )
             
             # Log the full response for debugging
             self.logger.debug(f"API Response Status: {response.status_code}")
-            self.logger.debug(f"API Response Headers: {response.headers}")
-            self.logger.debug(f"API Response Content: {response.text}")
+            self.logger.debug(f"Response headers: {response.headers}")
+            self.logger.debug(f"Response content: {response.text}")
             
             response.raise_for_status()
             

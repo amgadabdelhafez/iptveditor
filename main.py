@@ -8,11 +8,6 @@ def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(description='IPTV Editor Show Processor')
     parser.add_argument(
-        '--local',
-        action='store_true',
-        help='Use local JSON files instead of API'
-    )
-    parser.add_argument(
         '--batch-size',
         type=int,
         default=DEFAULT_BATCH_SIZE,
@@ -27,7 +22,7 @@ def main():
     
     try:
         # Initialize and run editor
-        editor = IPTVEditor(use_api=not args.local, batch_size=args.batch_size)
+        editor = IPTVEditor(batch_size=args.batch_size)
         editor.process_shows()
     except Exception as e:
         logger.error(f"Fatal error: {str(e)}")

@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Dict, List
+from collections import defaultdict
 
 from config import STATE_FILE, CATEGORIES_FILE, SHOWS_FILE
 from utils import load_json_file, save_json_file, detect_language, arabic_to_english
@@ -8,9 +9,8 @@ from api import TMDBApi, IPTVEditorApi
 from database import cache_manager
 
 class IPTVEditor:
-    def __init__(self, use_api: bool = True, batch_size: int = 10):
+    def __init__(self, batch_size: int = 10):
         self.logger = logging.getLogger(__name__)
-        self.use_api = use_api
         self.batch_size = batch_size
         
         # Initialize API clients
@@ -20,6 +20,7 @@ class IPTVEditor:
         # Initialize data
         self.categories = []
         self.shows = []
+        self.shows_by_category = defaultdict(list)
         self.not_found_shows = []  # Track shows not found in TMDB
         
         # Load initial data
@@ -37,7 +38,10 @@ class IPTVEditor:
             self.state = state
             self.logger.debug(f"Loaded state: {state}")
         except FileNotFoundError:
-            self.state = {'last_processed_index': 0}
+            self.state = {
+                'current_category_id': None,
+                'last_processed_index': 0
+            }
             self.logger.debug("Starting new processing session")
 
     def save_state(self) -> None:
@@ -72,18 +76,37 @@ class IPTVEditor:
         if self.not_found_shows:
             self.logger.info(f"Saved {len(self.not_found_shows)} not found shows to not_found_shows.json")
 
+    def save_api_data_to_files(self, categories: List[Dict], shows: List[Dict]) -> None:
+        """Save API data to JSON files"""
+        # Save categories
+        categories_data = {'items': categories}
+        save_json_file(CATEGORIES_FILE, categories_data)
+        self.logger.info(f"Saved {len(categories)} categories to {CATEGORIES_FILE}")
+
+        # Save shows
+        shows_data = {'items': shows}
+        save_json_file(SHOWS_FILE, shows_data)
+        self.logger.info(f"Saved {len(shows)} shows to {SHOWS_FILE}")
+
     def load_data(self) -> None:
         """Load categories and shows data"""
         try:
-            source = "API" if self.use_api else "local files"
-            self.logger.debug(f"Loading data from {source}")
-            
-            if self.use_api:
-                self.categories = self.iptv_api.get_categories()
-                self.shows = self.iptv_api.get_shows()
-            else:
+            # Try to load from local files first
+            try:
+                self.logger.debug("Attempting to load from local files")
                 self.categories = load_json_file(CATEGORIES_FILE)['items']
                 self.shows = load_json_file(SHOWS_FILE)['items']
+                self.logger.info("Successfully loaded data from local files")
+            except FileNotFoundError:
+                # If files don't exist, fetch from API and save
+                self.logger.info("Local files not found, fetching from API")
+                self.categories = self.iptv_api.get_categories()
+                self.shows = self.iptv_api.get_shows()
+                self.save_api_data_to_files(self.categories, self.shows)
+            
+            # Group shows by category
+            for show in self.shows:
+                self.shows_by_category[show['category']].append(show)
             
             self.logger.debug(f"Loaded {len(self.categories)} categories and {len(self.shows)} shows")
         except Exception as e:
@@ -174,17 +197,42 @@ class IPTVEditor:
             return False
 
     def process_shows(self) -> None:
-        """Process shows in batches, starting from the last processed index"""
-        start_idx = self.state['last_processed_index']
-        end_idx = min(start_idx + self.batch_size, len(self.shows))
-        total_shows = len(self.shows)
+        """Process shows by category in batches"""
+        # Get current category or start with first category
+        current_category_id = self.state.get('current_category_id')
+        if current_category_id is None:
+            current_category_id = self.categories[0]['id']
+            self.state['current_category_id'] = current_category_id
+            self.state['last_processed_index'] = 0
+            self.save_state()
         
-        self.logger.info(f"Processing shows {start_idx + 1}-{end_idx} of {total_shows}")
+        # Get category info
+        category = next((c for c in self.categories if c['id'] == current_category_id), None)
+        if not category:
+            self.logger.error(f"Category {current_category_id} not found")
+            return
+        
+        # Get shows for current category
+        category_shows = self.shows_by_category[current_category_id]
+        if not category_shows:
+            self.logger.info(f"No shows found in category {category['name']}")
+            # Move to next category
+            next_category_idx = next((i for i, c in enumerate(self.categories) if c['id'] == current_category_id), -1) + 1
+            if next_category_idx < len(self.categories):
+                self.state['current_category_id'] = self.categories[next_category_idx]['id']
+                self.state['last_processed_index'] = 0
+                self.save_state()
+            return
+        
+        start_idx = self.state['last_processed_index']
+        end_idx = min(start_idx + self.batch_size, len(category_shows))
+        
+        self.logger.info(f"Processing category: {category['name']} ({start_idx + 1}-{end_idx} of {len(category_shows)} shows)")
         
         try:
             for i in range(start_idx, end_idx):
-                show = self.shows[i]
-                self.logger.info(f"[{i + 1}/{total_shows}] {show['name']} ", extra={'terminator': ''})
+                show = category_shows[i]
+                self.logger.info(f"[{i + 1}/{len(category_shows)}] {show['name']} ", extra={'terminator': ''})
                 
                 try:
                     self.process_show(show)
@@ -193,6 +241,14 @@ class IPTVEditor:
                 finally:
                     # Update state regardless of success/failure
                     self.state['last_processed_index'] = i + 1
+                    self.save_state()
+            
+            # If we've processed all shows in this category, move to next category
+            if end_idx >= len(category_shows):
+                next_category_idx = next((i for i, c in enumerate(self.categories) if c['id'] == current_category_id), -1) + 1
+                if next_category_idx < len(self.categories):
+                    self.state['current_category_id'] = self.categories[next_category_idx]['id']
+                    self.state['last_processed_index'] = 0
                     self.save_state()
         finally:
             # Report cache statistics

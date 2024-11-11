@@ -9,6 +9,7 @@ load_dotenv()
 # API Keys and Tokens (loaded from environment)
 TMDB_API_KEY = load_env_var('TMDB_API_KEY')
 IPTVEDITOR_TOKEN = load_env_var('IPTVEDITOR_TOKEN')
+IPTVEDITOR_PLAYLIST_ID = load_env_var('IPTVEDITOR_PLAYLIST_ID')
 
 # File paths
 STATE_FILE = "editor_state.json"
