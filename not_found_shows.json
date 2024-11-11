@@ -1,0 +1,61 @@
+{
+  "total": 8,
+  "shows": [
+    {
+      "id": 9,
+      "name": "ساترداي نايت لايف بالعربي",
+      "category_id": 320,
+      "category_name": "برامج",
+      "transliterated_name": "strdy nyt lyf bl`rby"
+    },
+    {
+      "id": 12,
+      "name": "في ال لالا لاند",
+      "category_id": 299,
+      "category_name": "مسلسلات مصريه",
+      "transliterated_name": "fy l ll lnd"
+    },
+    {
+      "id": 14,
+      "name": "نيلى وشريهان",
+      "category_id": 299,
+      "category_name": "مسلسلات مصريه",
+      "transliterated_name": "nyl~ wshryhn"
+    },
+    {
+      "id": 18,
+      "name": "الكبريت الاحمر",
+      "category_id": 299,
+      "category_name": "مسلسلات مصريه",
+      "transliterated_name": "lkbryt lHmr"
+    },
+    {
+      "id": 22,
+      "name": "شهاده ميلاد",
+      "category_id": 299,
+      "category_name": "مسلسلات مصريه",
+      "transliterated_name": "shhdh myld"
+    },
+    {
+      "id": 27,
+      "name": "مسلسل اختفاء",
+      "category_id": 299,
+      "category_name": "مسلسلات مصريه",
+      "transliterated_name": "mslsl khtf"
+    },
+    {
+      "id": 35,
+      "name": "لدينا اقول اخري",
+      "category_id": 311,
+      "category_name": "يسرا",
+      "transliterated_name": "ldynA Aqwl Axry"
+    },
+    {
+      "id": 39,
+      "name": "بالحجم العائلى",
+      "category_id": 310,
+      "category_name": "يحيي الفخرانى",
+      "transliterated_name": "bAlHjm AlEA}lY"
+    }
+  ]
+}

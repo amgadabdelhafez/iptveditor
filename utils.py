@@ -1,11 +1,12 @@
 import json
-import logging
 import os
-from typing import Dict, Any
-from logging.handlers import MemoryHandler
+import re
+import logging
+import unicodedata
+from typing import Any, Dict, Optional
+from arabic_buckwalter_transliteration.transliteration import arabic_to_buckwalter
 
 class MinimalFormatter(logging.Formatter):
-    """Custom formatter that only shows the message for INFO level"""
     def format(self, record):
         if record.levelno == logging.INFO:
             return record.getMessage()
@@ -86,45 +87,32 @@ def setup_logging() -> logging.Logger:
     
     return logger
 
-def load_json_file(filepath: str) -> Dict[str, Any]:
+def load_json_file(filepath: str, raise_on_error: bool = True) -> Optional[Dict[str, Any]]:
     """Load and parse JSON file"""
     try:
-        with open(filepath) as f:
+        with open(filepath, encoding='utf-8') as f:
             return json.load(f)
     except FileNotFoundError:
-        logging.error(f"File not found: {filepath}")
-        raise
+        if raise_on_error:
+            logging.error(f"File not found: {filepath}")
+            raise
+        return None
     except json.JSONDecodeError:
-        logging.error(f"Invalid JSON in file: {filepath}")
-        raise
+        if raise_on_error:
+            logging.error(f"Invalid JSON in file: {filepath}")
+            raise
+        return None
 
 def save_json_file(filepath: str, data: Dict[str, Any]) -> None:
-    """Save data to JSON file"""
+    """Save data to JSON file with proper UTF-8 encoding"""
     try:
-        with open(filepath, 'w') as f:
-            json.dump(data, f)
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(filepath) or '.', exist_ok=True)
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
     except Exception as e:
         logging.error(f"Failed to save file {filepath}: {str(e)}")
         raise
-
-def detect_language(text: str) -> str:
-    """
-    Detect if text is primarily Arabic or English.
-    Uses Unicode ranges to properly detect Arabic text.
-    """
-    arabic_count = 0
-    english_count = 0
-    
-    for char in text:
-        # Arabic Unicode ranges
-        if '\u0600' <= char <= '\u06FF' or '\u0750' <= char <= '\u077F' or '\uFB50' <= char <= '\uFDFF' or '\uFE70' <= char <= '\uFEFF':
-            arabic_count += 1
-        # Basic Latin (English) range
-        elif '\u0020' <= char <= '\u007F':
-            english_count += 1
-    
-    # If text has more Arabic characters, consider it Arabic
-    return 'ar' if arabic_count > english_count else 'en'
 
 def load_env_var(key: str, default: str = None) -> str:
     """
@@ -135,3 +123,23 @@ def load_env_var(key: str, default: str = None) -> str:
     if value is None:
         raise ValueError(f"Required environment variable {key} is not set")
     return value
+
+def detect_language(text: str) -> str:
+    """Detect if text contains Arabic characters"""
+    # Arabic Unicode range
+    arabic_pattern = re.compile(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]+')
+    return 'ar' if arabic_pattern.search(text) else 'en'
+
+def arabic_to_english(text: str) -> str:
+    """
+    Convert Arabic text to a searchable English form using Buckwalter transliteration.
+    This provides a standardized way to convert Arabic text to ASCII.
+    """
+    try:
+        # Convert Arabic text to Buckwalter transliteration
+        transliterated = arabic_to_buckwalter(text)
+        # Clean up the result - remove double spaces and trailing spaces
+        return ' '.join(transliterated.split())
+    except Exception as e:
+        logging.error(f"Error in arabic_to_english: {str(e)}")
+        return text  # Return original text if conversion fails

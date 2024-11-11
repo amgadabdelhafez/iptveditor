@@ -2,17 +2,18 @@ import logging
 import requests
 import os
 from typing import Dict, Any, List, Optional
-from utils import detect_language
+from utils import detect_language, arabic_to_english
 from database import cache_manager
+from config import HTTP_HEADERS, IPTVEDITOR_TOKEN, IPTVEDITOR_BASE_URL, TMDB_BASE_URL
 
 class TMDBApi:
     def __init__(self):
         self.api_key = os.getenv('TMDB_API_KEY', 'a2764023c82b647eac48485b4deac0bf')
-        self.base_url = 'https://api.themoviedb.org/3'
+        self.base_url = TMDB_BASE_URL
         self.logger = logging.getLogger(__name__)
 
     def search_show(self, title: str) -> Optional[Dict]:
-        """Search for a TV show by title"""
+        """Search for a TV show by title with improved language handling"""
         self.logger.debug(f"Searching for show: {title}")
         
         # Check cache first
@@ -22,13 +23,41 @@ class TMDBApi:
             self.logger.debug("Using cached search result")
             return cached_result
         
-        self.logger.debug(f"No cache found, searching TMDB API for: {title}")
-        
-        # Detect language for better search results
+        # Detect language
         lang = detect_language(title)
         self.logger.debug(f"Detected language for '{title}': {lang}")
         
-        # Search TMDB API
+        # Try with detected language first
+        result = self._search_tmdb(title, lang)
+        if result:
+            self.logger.debug(f"Found match in {lang}")
+            cache_manager.set('tmdb_search', cache_key, result)
+            return result
+            
+        # If no results and language was Arabic, try English transliteration
+        if lang == 'ar':
+            transliterated = arabic_to_english(title)
+            self.logger.debug(f"Trying transliterated title: {transliterated}")
+            result = self._search_tmdb(transliterated, 'en')
+            if result:
+                self.logger.debug("Found match using transliterated title")
+                cache_manager.set('tmdb_search', cache_key, result)
+                return result
+        
+        # If still no results and language wasn't English, try English as fallback
+        elif lang != 'en':
+            self.logger.debug("Trying English as fallback")
+            result = self._search_tmdb(title, 'en')
+            if result:
+                self.logger.debug("Found match in English")
+                cache_manager.set('tmdb_search', cache_key, result)
+                return result
+        
+        self.logger.debug(f"No matches found for '{title}'")
+        return None
+
+    def _search_tmdb(self, title: str, lang: str) -> Optional[Dict]:
+        """Internal method to search TMDB API"""
         params = {
             'api_key': self.api_key,
             'query': title,
@@ -45,13 +74,9 @@ class TMDBApi:
         # Try to find exact title match first
         for result in results:
             if result['name'].lower() == title.lower():
-                self.logger.debug("Found exact title match")
-                cache_manager.set('tmdb_search', cache_key, result)
                 return result
         
         # Fallback to first result
-        self.logger.debug(f"Found match in detected language ({lang})")
-        cache_manager.set('tmdb_search', cache_key, results[0])
         return results[0]
 
     def get_show_details(self, tmdb_id: int) -> Dict:
@@ -83,17 +108,26 @@ class TMDBApi:
 
 class IPTVEditorApi:
     def __init__(self):
-        self.base_url = 'https://editor.iptveditor.com'
+        self.base_url = IPTVEDITOR_BASE_URL
         self.logger = logging.getLogger(__name__)
+        self.headers = HTTP_HEADERS.copy()
 
     def get_categories(self) -> List[Dict]:
         """Get all categories"""
-        response = requests.get(f"{self.base_url}/api/category/get-data")
+        response = requests.get(
+            f"{self.base_url}/category/get-data",
+            headers=self.headers,
+            json={'token': IPTVEDITOR_TOKEN}
+        )
         return response.json()['items']
 
     def get_shows(self) -> List[Dict]:
         """Get all shows"""
-        response = requests.get(f"{self.base_url}/api/stream/series/get-data")
+        response = requests.get(
+            f"{self.base_url}/stream/series/get-data",
+            headers=self.headers,
+            json={'token': IPTVEDITOR_TOKEN}
+        )
         return response.json()['items']
 
     def get_episodes(self, show_id: int) -> List[Dict]:
@@ -110,9 +144,16 @@ class IPTVEditorApi:
         self.logger.debug(f"No cache found, fetching episodes from API for show ID: {show_id}")
         
         # Get episodes from API
+        payload = {
+            'seriesId': str(show_id),
+            'url': None,
+            'token': IPTVEDITOR_TOKEN
+        }
+        
         response = requests.post(
-            f"{self.base_url}/api/episode/get-data",
-            json={'series_id': show_id}
+            f"{self.base_url}/episode/get-data",
+            headers=self.headers,
+            json=payload
         )
         result = response.json()['items']
         
@@ -133,17 +174,41 @@ class IPTVEditorApi:
         
         self.logger.debug(f"No cache found, updating show via API: {show_id}")
         
-        # Update show via API
-        response = requests.post(
-            f"{self.base_url}/api/stream/series/save",
-            json={
+        # Update show via API with the correct payload structure
+        payload = {
+            'items': [{
                 'id': show_id,
-                'tmdb_id': tmdb_id,
-                'category_id': category_id
-            }
-        )
-        result = response.json() == 1
+                'tmdb': tmdb_id,
+                'youtube_trailer': '',
+                'category': category_id
+            }],
+            'checkSaved': False,
+            'token': IPTVEDITOR_TOKEN
+        }
         
-        self.logger.debug(f"Cached update result for show ID {show_id}")
-        cache_manager.set('update', cache_key, result)
-        return result
+        try:
+            response = requests.post(
+                f"{self.base_url}/stream/series/save",
+                headers=self.headers,
+                json=payload  # Use json parameter to properly serialize
+            )
+            
+            # Log the full response for debugging
+            self.logger.debug(f"API Response Status: {response.status_code}")
+            self.logger.debug(f"API Response Headers: {response.headers}")
+            self.logger.debug(f"API Response Content: {response.text}")
+            
+            response.raise_for_status()
+            
+            # Consider 200 status code and "200" response as success
+            result = response.status_code == 200 and response.text.strip() == "200"
+            
+            self.logger.debug(f"Cached update result for show ID {show_id}")
+            cache_manager.set('update', cache_key, result)
+            return result
+            
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"API request failed: {str(e)}")
+            if hasattr(e.response, 'text'):
+                self.logger.error(f"Error response content: {e.response.text}")
+            return False
