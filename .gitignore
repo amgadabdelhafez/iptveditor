@@ -38,5 +38,12 @@ wheels/
 # State files
 editor_state.json
 
+# Database
+cache.db
+cache.db-journal
+
 # Logs
 *.log
+
+# Sample responses
+samples/

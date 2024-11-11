@@ -4,6 +4,7 @@ from typing import Dict, List
 from config import STATE_FILE, CATEGORIES_FILE, SHOWS_FILE
 from utils import load_json_file, save_json_file
 from api import TMDBApi, IPTVEditorApi
+from database import cache_manager
 
 class IPTVEditor:
     def __init__(self, use_api: bool = True, batch_size: int = 10):
@@ -57,7 +58,9 @@ class IPTVEditor:
 
     def process_show(self, show: Dict) -> None:
         """Process a single show"""
-        self.logger.info(f"Processing show: {show['name']}")
+        show_id = show['id']
+        
+        self.logger.info(f"Processing show: {show['name']} (ID: {show_id})")
         
         try:
             # Get show info from TMDB
@@ -69,8 +72,16 @@ class IPTVEditor:
             show_tmdb_id = show_info['id']
             self.logger.info(f"Found TMDB match: {show_info.get('name')} (ID: {show_tmdb_id})")
             
+            # Get detailed show information
+            show_details = self.tmdb_api.get_show_details(show_tmdb_id)
+            self.logger.info(f"Retrieved show details for {show_info.get('name')}")
+            
+            # Get show episodes
+            episodes = self.iptv_api.get_episodes(show_id)
+            self.logger.info(f"Retrieved episodes for {show['name']}")
+            
             # Update the show
-            result = self.iptv_api.update_show(show['id'], show_tmdb_id, show['category'])
+            result = self.iptv_api.update_show(show_id, show_tmdb_id, show['category'])
             self.logger.info(f"Successfully updated show: {show['name']}")
             
         except Exception as e:
@@ -84,15 +95,19 @@ class IPTVEditor:
         
         self.logger.info(f"Processing shows {start_idx + 1} to {end_idx} of {len(self.shows)}")
         
-        for i in range(start_idx, end_idx):
-            show = self.shows[i]
-            self.logger.info(f"\nProcessing show {i + 1}/{len(self.shows)}: {show['name']}")
-            
-            try:
-                self.process_show(show)
-            except Exception as e:
-                self.logger.error(f"Failed to process show: {str(e)}")
-            finally:
-                # Update state regardless of success/failure
-                self.state['last_processed_index'] = i + 1
-                self.save_state()
+        try:
+            for i in range(start_idx, end_idx):
+                show = self.shows[i]
+                self.logger.info(f"\nProcessing show {i + 1}/{len(self.shows)}: {show['name']}")
+                
+                try:
+                    self.process_show(show)
+                except Exception as e:
+                    self.logger.error(f"Failed to process show: {str(e)}")
+                finally:
+                    # Update state regardless of success/failure
+                    self.state['last_processed_index'] = i + 1
+                    self.save_state()
+        finally:
+            # Report cache statistics at the end
+            cache_manager.report_stats()

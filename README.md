@@ -1,13 +1,14 @@
 # IPTV Editor
 
-A Python tool for managing and updating IPTV show information using TMDB data.
+A Python tool for managing and updating IPTV show information using TMDB data. Features intelligent caching, Arabic/English language support, and batch processing capabilities.
 
 ## Features
 
-- Fetch and update show information from TMDB
+- TMDB show information lookup and matching
 - Support for both Arabic and English show titles
+- Smart language detection and matching
+- Comprehensive caching system
 - Batch processing with state management
-- Configurable data source (API or local JSON)
 - Detailed logging and error handling
 
 ## Requirements
@@ -73,35 +74,133 @@ Process specific number of shows:
 python3 main.py --batch-size 5
 ```
 
-## Project Structure
+## Implementation Details
 
-- `main.py`: Entry point and CLI handling
-- `editor.py`: Core IPTVEditor class
-- `api.py`: TMDB and IPTV Editor API clients
-- `config.py`: Configuration and constants
-- `utils.py`: Helper functions and utilities
+### Project Structure
 
-## Features
+```
+iptveditor/
+├── main.py              # Entry point and CLI handling
+├── editor.py            # Core IPTVEditor class
+├── api.py              # API clients (TMDB & IPTV Editor)
+├── config.py           # Configuration and constants
+├── utils.py            # Helper functions
+├── database.py         # SQLite cache implementation
+├── .env               # Environment variables
+└── requirements.txt   # Dependencies
+```
 
-### Language Detection
+### Caching System
 
-The tool uses smart language detection to properly match shows:
+The project uses SQLite with SQLAlchemy for efficient caching of API responses:
 
-1. Exact title match (primary)
-2. Language-based match (secondary)
-3. Configurable fallback to first result
+#### Database Schema
+
+1. TMDB Search Cache:
+
+```sql
+CREATE TABLE tmdb_search_cache (
+    id INTEGER PRIMARY KEY,
+    query VARCHAR(255) NOT NULL,
+    response TEXT NOT NULL,  -- JSON string
+    created_at DATETIME,
+    updated_at DATETIME
+);
+```
+
+- Caches show search results
+- Includes "not found" results to prevent redundant searches
+- Indexed by show name for fast lookups
+
+2. TMDB Details Cache:
+
+```sql
+CREATE TABLE tmdb_details_cache (
+    id INTEGER PRIMARY KEY,
+    tmdb_id INTEGER UNIQUE NOT NULL,
+    response TEXT NOT NULL,  -- JSON string
+    created_at DATETIME,
+    updated_at DATETIME
+);
+```
+
+- Stores detailed show information
+- Indexed by TMDB ID
+
+3. Episodes Cache:
+
+```sql
+CREATE TABLE iptveditor_episodes_cache (
+    id INTEGER PRIMARY KEY,
+    show_id INTEGER UNIQUE NOT NULL,
+    response TEXT NOT NULL,  -- JSON string
+    created_at DATETIME,
+    updated_at DATETIME
+);
+```
+
+- Caches show episodes
+- Indexed by show ID
+
+4. Update Cache:
+
+```sql
+CREATE TABLE iptveditor_update_cache (
+    id INTEGER PRIMARY KEY,
+    show_id INTEGER NOT NULL,
+    tmdb_id INTEGER NOT NULL,
+    category_id INTEGER NOT NULL,
+    response TEXT NOT NULL,  -- JSON string
+    created_at DATETIME,
+    updated_at DATETIME
+);
+```
+
+- Caches show update responses
+- Composite index on (show_id, tmdb_id, category_id)
+
+### Cache Features
+
+1. Not Found Handling:
+
+- Caches negative search results
+- Prevents redundant API calls for known missing shows
+- Special response format for not found cases:
+
+```python
+{
+    "not_found": True,
+    "reason": "No results found in TMDB"
+}
+```
+
+2. Language Support:
+
+- Smart language detection using Unicode ranges
+- Prioritizes exact title matches
+- Falls back to language-based matches
+- Configurable fallback to first result
+
+3. Performance:
+
+- Indexed queries for fast lookups
+- Automatic cache updates
+- Cache hit/miss statistics tracking
+- Timestamp tracking for cache entries
 
 ### State Management
 
-- Automatically tracks progress
+- Tracks progress through show processing
 - Resumes from last processed show
-- Saves state after each show
+- Persists state between runs
+- Handles failures gracefully
 
-## Error Handling
+### Error Handling
 
 - Comprehensive error logging
-- Graceful failure handling
+- Graceful failure recovery
 - Detailed progress tracking
+- Cache statistics reporting
 
 ## Contributing
 
@@ -110,3 +209,7 @@ The tool uses smart language detection to properly match shows:
 3. Commit your changes
 4. Push to the branch
 5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

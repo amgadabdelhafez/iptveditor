@@ -7,14 +7,33 @@ from config import (
     IPTVEDITOR_BASE_URL, TMDB_BASE_URL, FALLBACK_TO_FIRST_RESULT
 )
 from utils import detect_language
+from database import cache_manager
+
+# Special response for shows not found in TMDB
+NOT_FOUND_RESPONSE = {
+    "not_found": True,
+    "reason": "No results found in TMDB"
+}
 
 class TMDBApi:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
     def search_show(self, query: str) -> Optional[Dict]:
-        """Search for show on TMDB"""
-        self.logger.info(f"Searching TMDB for show: {query}")
+        """Search for show on TMDB with cache support"""
+        self.logger.info(f"Searching for show: {query}")
+        
+        # Check cache first
+        cached_result = cache_manager.get_tmdb_search(query)
+        if cached_result:
+            self.logger.info(f"Found cached search result for '{query}'")
+            # If it's a "not found" result, log and return None
+            if cached_result.get('not_found'):
+                self.logger.info(f"Show '{query}' was previously marked as not found in TMDB")
+                return None
+            return cached_result
+        
+        self.logger.info(f"No cache found, searching TMDB API for: {query}")
         
         # Detect show name language
         detected_lang = detect_language(query)
@@ -35,6 +54,8 @@ class TMDBApi:
             
             if not data['results']:
                 self.logger.warning(f"No results found for show: {query}")
+                # Cache the "not found" result
+                cache_manager.cache_tmdb_search(query, NOT_FOUND_RESPONSE)
                 return None
             
             # Try to find exact title match first
@@ -46,7 +67,9 @@ class TMDBApi:
             
             if exact_matches:
                 self.logger.info(f"Found exact title match for '{query}'")
-                return exact_matches[0]
+                result = exact_matches[0]
+                cache_manager.cache_tmdb_search(query, result)
+                return result
             
             # Then try language match
             lang_matches = [
@@ -56,7 +79,9 @@ class TMDBApi:
             
             if lang_matches:
                 self.logger.info(f"Found match in detected language ({detected_lang})")
-                return lang_matches[0]
+                result = lang_matches[0]
+                cache_manager.cache_tmdb_search(query, result)
+                return result
             
             # Fall back to first result if allowed
             if FALLBACK_TO_FIRST_RESULT:
@@ -64,12 +89,16 @@ class TMDBApi:
                     f"No matches found for '{query}' in language '{detected_lang}', "
                     "using first available result as fallback"
                 )
-                return data['results'][0]
+                result = data['results'][0]
+                cache_manager.cache_tmdb_search(query, result)
+                return result
             
             self.logger.error(
                 f"No suitable matches found for '{query}' "
                 f"(language: {detected_lang}, fallback disabled)"
             )
+            # Cache the "not found" result
+            cache_manager.cache_tmdb_search(query, NOT_FOUND_RESPONSE)
             return None
             
         except requests.exceptions.RequestException as e:
@@ -79,9 +108,17 @@ class TMDBApi:
             self.logger.error(f"Failed to parse TMDB response: {str(e)}")
             raise
 
-    def get_show_details(self, show_id: int) -> Dict:
-        """Get detailed show information from TMDB"""
+    def get_show_details(self, show_id: int) -> Optional[Dict]:
+        """Get detailed show information from TMDB with cache support"""
         self.logger.info(f"Getting details for TMDB ID: {show_id}")
+        
+        # Check cache first
+        cached_result = cache_manager.get_tmdb_details(show_id)
+        if cached_result:
+            self.logger.info(f"Found cached details for TMDB ID {show_id}")
+            return cached_result
+        
+        self.logger.info(f"No cache found, fetching details from TMDB API for ID: {show_id}")
         
         url = f"{TMDB_BASE_URL}/tv/{show_id}"
         params = {
@@ -93,7 +130,13 @@ class TMDBApi:
         try:
             response = requests.get(url, headers=HTTP_HEADERS, params=params)
             response.raise_for_status()
-            return response.json()
+            result = response.json()
+            
+            # Cache the result
+            cache_manager.cache_tmdb_details(show_id, result)
+            self.logger.info(f"Cached details for TMDB ID {show_id}")
+            
+            return result
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Failed to get show details: {str(e)}")
             raise
@@ -128,11 +171,21 @@ class IPTVEditorApi:
             self.logger.error(f"Failed to get shows: {str(e)}")
             raise
 
-    def get_episodes(self, series_id: int) -> Dict:
-        """Get episodes from IPTV Editor"""
+    def get_episodes(self, show_id: int) -> Optional[Dict]:
+        """Get episodes from IPTV Editor with cache support"""
+        self.logger.info(f"Getting episodes for show ID: {show_id}")
+        
+        # Check cache first
+        cached_result = cache_manager.get_iptveditor_episodes(show_id)
+        if cached_result:
+            self.logger.info(f"Found cached episodes for show ID {show_id}")
+            return cached_result
+        
+        self.logger.info(f"No cache found, fetching episodes from API for show ID: {show_id}")
+        
         url = f"{IPTVEDITOR_BASE_URL}/episode/get-data"
         payload = {
-            "seriesId": str(series_id),
+            "seriesId": str(show_id),
             "url": None,
             "token": IPTVEDITOR_TOKEN
         }
@@ -140,13 +193,29 @@ class IPTVEditorApi:
         try:
             response = requests.post(url, headers=HTTP_HEADERS, json=payload)
             response.raise_for_status()
-            return response.json()
+            result = response.json()
+            
+            # Cache the result
+            cache_manager.cache_iptveditor_episodes(show_id, result)
+            self.logger.info(f"Cached episodes for show ID {show_id}")
+            
+            return result
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Failed to get episodes: {str(e)}")
             raise
 
     def update_show(self, show_id: int, show_tmdb_id: int, show_category: int) -> Dict:
-        """Update show information in IPTV Editor"""
+        """Update show information in IPTV Editor with cache support"""
+        self.logger.info(f"Updating show ID {show_id} with TMDB ID {show_tmdb_id}")
+        
+        # Check cache first
+        cached_result = cache_manager.get_iptveditor_update(show_id, show_tmdb_id, show_category)
+        if cached_result:
+            self.logger.info(f"Found cached update result for show ID {show_id}")
+            return cached_result
+        
+        self.logger.info(f"No cache found, updating show via API: {show_id}")
+        
         url = f"{IPTVEDITOR_BASE_URL}/stream/series/save"
         payload = {
             "items": [{
@@ -162,7 +231,13 @@ class IPTVEditorApi:
         try:
             response = requests.post(url, headers=HTTP_HEADERS, json=payload)
             response.raise_for_status()
-            return response.json()
+            result = response.json()
+            
+            # Cache the result
+            cache_manager.cache_iptveditor_update(show_id, show_tmdb_id, show_category, result)
+            self.logger.info(f"Cached update result for show ID {show_id}")
+            
+            return result
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Failed to update show: {str(e)}")
             raise
